@@ -1,15 +1,15 @@
-const s3 = require('../config/aws-config');
+const s3 = require("../config/aws-config");
 
 module.exports = {
   uploadFile: async (
     uploadData,
     successCallback = () => {},
-    failCallback = () => {},
+    failCallback = () => {}
   ) => {
     const uploadParams = {
       Bucket: uploadData?.bucketName
         ? uploadData?.bucketName
-        : 'dayanandsagaruniversity',
+        : "nescodoucmentsandpdfs",
       Key: uploadData?.key,
       Body: uploadData?.file,
       ContentType: uploadData?.contentType,
