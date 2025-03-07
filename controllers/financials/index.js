@@ -130,7 +130,7 @@ module.exports.EditFinancials = async (req, res) => {
       }
       res.status(201).json({
         success: true,
-        message: "Financials Created Successfully!",
+        message: "Financials Edited Successfully!",
         data: newDetail,
       });
     } else {
@@ -151,7 +151,7 @@ module.exports.EditFinancials = async (req, res) => {
 
       res.status(201).json({
         success: true,
-        message: "Financials Created Successfully!",
+        message: "Financials Edited Successfully!",
         data: newDetail,
       });
     }
