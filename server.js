@@ -34,9 +34,9 @@ app.use("/api/v1/sebi", protect, addDetail);
 app.use("/api/v1/announcements", protect, Announcements);
 app.use("/api/v1/financials", protect, Financials);
 app.use("/api/v1/shareholder", protect, shareholder);
-app.use("/api/v1/internship", protect, internship);
-app.use("/api/v1/graduates", protect, graduates);
-app.use("/api/v1/experience", protect, experienced);
+app.use("/api/v1/internship", internship);
+app.use("/api/v1/graduates", graduates);
+app.use("/api/v1/experience", experienced);
 
 const PORT = process.env.PORT || 8040;
 
