@@ -7,6 +7,9 @@ const uploadRoutes = require("./routes/upload-routes.js");
 const addDetail = require("./routes/sebi.route.js");
 const Announcements = require("./routes/announcements.route.js");
 const Financials = require("./routes/financials.route.js");
+const internship = require("./routes/internship.route.js");
+const graduates = require("./routes/graduate.route.js");
+const experienced = require("./routes/experienced.route.js");
 const shareholder = require("./routes/shareholder.route.js");
 const bodyParser = require("body-parser");
 const { protect, adminOnly } = require("./middlewares/authMiddleware.js");
@@ -31,6 +34,9 @@ app.use("/api/v1/sebi", protect, addDetail);
 app.use("/api/v1/announcements", protect, Announcements);
 app.use("/api/v1/financials", protect, Financials);
 app.use("/api/v1/shareholder", protect, shareholder);
+app.use("/api/v1/internship", protect, internship);
+app.use("/api/v1/graduates", protect, graduates);
+app.use("/api/v1/experience", protect, experienced);
 
 const PORT = process.env.PORT || 8040;
 
