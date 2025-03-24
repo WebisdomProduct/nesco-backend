@@ -7,11 +7,12 @@ const {
   EditAnnounce,
   DeleteAnnounce,
 } = require("../controllers/announcement/index.js");
+const { protect } = require("../middlewares/authMiddleware.js");
 
-router.post("/", AddAnnounce);
+router.post("/", protect, AddAnnounce);
 router.get("/", GetAnnounce);
 router.get("/:id", GetAnnounceByID);
-router.put("/:id", EditAnnounce);
-router.delete("/:id", DeleteAnnounce);
+router.put("/:id", protect, EditAnnounce);
+router.delete("/:id", protect, DeleteAnnounce);
 
 module.exports = router;

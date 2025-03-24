@@ -21,7 +21,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json({ limit: "50mb", extended: true }));
+app.use(bodyParser.json({ limit: "200mb", extended: true }));
 app.use(express.json());
 app.use(express.json());
 
@@ -31,9 +31,9 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/upload", uploadRoutes);
 
 app.use("/api/v1/sebi", protect, addDetail);
-app.use("/api/v1/announcements", protect, Announcements);
-app.use("/api/v1/financials", protect, Financials);
-app.use("/api/v1/shareholder", protect, shareholder);
+app.use("/api/v1/announcements", Announcements);
+app.use("/api/v1/financials", Financials);
+app.use("/api/v1/shareholder", shareholder);
 app.use("/api/v1/internship", internship);
 app.use("/api/v1/graduates", graduates);
 app.use("/api/v1/experience", experienced);

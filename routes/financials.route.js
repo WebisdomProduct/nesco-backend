@@ -7,11 +7,12 @@ const {
   EditFinancials,
   DeleteFinancialsById,
 } = require("../controllers/financials/index.js");
+const { protect } = require("../middlewares/authMiddleware.js");
 
-router.post("/", AddFinancials);
+router.post("/", protect, AddFinancials);
 router.get("/", GetFinancials);
 router.get("/:id", GetFinancialsById);
-router.put("/:id", EditFinancials);
-router.delete("/:id", DeleteFinancialsById);
+router.put("/:id", protect, EditFinancials);
+router.delete("/:id", protect, DeleteFinancialsById);
 
 module.exports = router;

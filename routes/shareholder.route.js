@@ -30,33 +30,34 @@ const {
   EditContact,
   DeleteContact,
 } = require("../controllers/shareholder/contact.controller.js");
+const { protect } = require("../middlewares/authMiddleware.js");
 
 // corner Api
-router.post("/corner/", AddCorner);
+router.post("/corner/", protect, AddCorner);
 router.get("/corner/", GetCorner);
 router.get("/corner/:id", GetCornerById);
-router.put("/corner/:id", EditCorner);
-router.delete("/corner/:id", DeleteCornerById);
+router.put("/corner/:id", protect, EditCorner);
+router.delete("/corner/:id", protect, DeleteCornerById);
 
 // unclaimed api
-router.post("/unclaimed/", AddUnclaimed);
+router.post("/unclaimed/", protect, AddUnclaimed);
 router.get("/unclaimed/", GetUnclaimed);
 router.get("/unclaimed/:id", GetUnclaimedById);
-router.put("/unclaimed/:id", EditUnclaimed);
-router.delete("/unclaimed/:id", DeleteUnclaimedById);
+router.put("/unclaimed/:id", protect, EditUnclaimed);
+router.delete("/unclaimed/:id", protect, DeleteUnclaimedById);
 
 // documentDetail Api
-router.post("/documentDetail/", AddDocumentDetail);
+router.post("/documentDetail/", protect, AddDocumentDetail);
 router.get("/documentDetail/", GetDocumentDetail);
 router.get("/documentDetail/:id", GetDocumentDetailById);
-router.put("/documentDetail/:id", EditDocumentDetail);
-router.delete("/documentDetail/:id", DeleteDocumentDetailById);
+router.put("/documentDetail/:id", protect, EditDocumentDetail);
+router.delete("/documentDetail/:id", protect, DeleteDocumentDetailById);
 
 // contact Api
-router.post("/contact/", AddContact);
+router.post("/contact/", protect, AddContact);
 router.get("/contact/", GetAllContacts);
 router.get("/contact/:id", GetContactById);
-router.put("/contact/:id", EditContact);
-router.delete("/contact/:id", DeleteContact);
+router.put("/contact/:id", protect, EditContact);
+router.delete("/contact/:id", protect, DeleteContact);
 
 module.exports = router;
