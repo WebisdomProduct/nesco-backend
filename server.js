@@ -8,6 +8,7 @@ const addDetail = require("./routes/sebi.route.js");
 const Announcements = require("./routes/announcements.route.js");
 const Financials = require("./routes/financials.route.js");
 const internship = require("./routes/internship.route.js");
+const leadership = require("./routes/leadership.route.js");
 const graduates = require("./routes/graduate.route.js");
 const experienced = require("./routes/experienced.route.js");
 const shareholder = require("./routes/shareholder.route.js");
@@ -37,6 +38,7 @@ app.use("/api/v1/shareholder", shareholder);
 app.use("/api/v1/internship", internship);
 app.use("/api/v1/graduates", graduates);
 app.use("/api/v1/experience", experienced);
+app.use("/api/v1/leadership", leadership);
 
 const PORT = process.env.PORT || 8040;
 
