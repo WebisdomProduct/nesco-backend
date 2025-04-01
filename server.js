@@ -19,19 +19,18 @@ dotenv.config();
 connectDB();
 
 const app = express();
-
 app.use(cors());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json({ limit: "200mb", extended: true }));
-app.use(express.json());
-app.use(express.json());
+// app.use(bodyParser.json({ limit: "50mb", extended: true }));
 
 app.get("/", (req, res) => res.send("API is running"));
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/upload", uploadRoutes);
 
-app.use("/api/v1/sebi", protect, addDetail);
+app.use("/api/v1/sebi", addDetail);
 app.use("/api/v1/announcements", Announcements);
 app.use("/api/v1/financials", Financials);
 app.use("/api/v1/shareholder", shareholder);
