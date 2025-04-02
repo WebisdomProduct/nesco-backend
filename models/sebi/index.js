@@ -24,7 +24,8 @@ const documentAllSchema = new mongoose.Schema({
 const pdfFieldSchema = new mongoose.Schema({
   pdfDate: String,
   pdfName: String,
-  pdfFile: String, // File path or URL
+  pdfFile: String,
+  quater: String,
 });
 
 const pdfTableSchema = new mongoose.Schema({

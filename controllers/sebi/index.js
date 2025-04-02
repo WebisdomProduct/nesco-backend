@@ -86,7 +86,11 @@ const cleanDataBasedOnType = (data) => {
             const hasValidFields =
               table.fields &&
               table.fields.some(
-                (field) => field.pdfName || field.pdfFile || field.pdfDate
+                (field) =>
+                  field.pdfName ||
+                  field.pdfFile ||
+                  field.pdfDate ||
+                  field.quater
               );
 
             return hasMainFields || hasValidFields;
@@ -95,7 +99,11 @@ const cleanDataBasedOnType = (data) => {
             // Clean up fields array if it exists
             if (table.fields && Array.isArray(table.fields)) {
               table.fields = table.fields.filter(
-                (field) => field.pdfName || field.pdfFile || field.pdfDate
+                (field) =>
+                  field.pdfName ||
+                  field.pdfFile ||
+                  field.pdfDate ||
+                  field.quater
               );
             }
             return table;
@@ -179,6 +187,7 @@ const transformPdfTable = (pdfTables) => {
     fields: (table.fields || []).map((field) => ({
       pdfName: field.pdfName,
       pdfFile: field.pdfFile,
+      quater: field.quater,
       pdfDate:
         field.pdfDate && typeof field.pdfDate === "string"
           ? new Date(field.pdfDate)
@@ -351,6 +360,7 @@ exports.updateSEBIRecord = async (req, res) => {
         fields: table.fields.map((field) => ({
           pdfName: field.pdfName,
           pdfFile: field.pdfFile,
+          quater: field.quater,
           pdfDate: field.pdfDate && new Date(field.pdfDate),
           _id: field._id,
         })),
