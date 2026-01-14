@@ -21,7 +21,7 @@ connectDB();
 
 const app = express();
 app.use((req, res, next) => {
-  const allowedOrigins = ['http://localhost:3000','http://localhost:4000'];
+  const allowedOrigins = ['http://localhost:3000','http://localhost:4000' , 'https://main.d8gdexgfmcmvy.amplifyapp.com', 'https://nesco-admin-panel.vercel.app'];
   const origin = req.headers.origin;
 
   if (allowedOrigins.includes(origin)) {
