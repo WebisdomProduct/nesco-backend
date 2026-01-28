@@ -6,6 +6,10 @@ const mentorSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  pageName:{
+    type:String,
+    required:true
+  },
   designation: {
     type: String,
     required: true,

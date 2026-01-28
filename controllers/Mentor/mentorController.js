@@ -62,6 +62,7 @@ exports.createMentor = async (req, res) => {
     const mentor = new Mentor({
       name: req.body.name,
       designation: req.body.designation,
+      pageName:req.body.pageName,
       noteTitle: req.body.noteTitle,
       noteText,
       mentorImage: mentorImageUrl,

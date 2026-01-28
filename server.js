@@ -71,7 +71,15 @@ app.use("/api/v1/mentors", require("./routes/mentor-routes"));
 app.use('/api/v1/news', require('./routes/news-routes'));
 app.use('/api/v1/directors', require('./routes/board-of-directors.route.js'));
 app.use('/api/v1/contact', require('./routes/contact.route.js'));
+app.use('/api/v1/homepage' , require("./routes/HomePageRoutes/HomePageBannerRoute.js"))
+app.use('/api/v1/homepage/goal' , require("./routes/HomePageRoutes/HomePageGoalRoutes.js"))
 
+
+// About section routes
+
+app.use("/api/v1/about/overview" , require("./routes/aboutPageRoutes/overviewPage/overview_banner_routes.js"));
+app.use("/api/v1/about/philosophy" , require("./routes/aboutPageRoutes/philosophy/philosophy_banner_router.js"));
+app.use("/api/v1/about/leadership" , require("./routes/aboutPageRoutes/leadership/leadership_banner_routes.js"));
 
 const PORT = process.env.PORT || 8040;
 
