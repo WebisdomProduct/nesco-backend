@@ -81,6 +81,13 @@ app.use("/api/v1/about/overview" , require("./routes/aboutPageRoutes/overviewPag
 app.use("/api/v1/about/philosophy" , require("./routes/aboutPageRoutes/philosophy/philosophy_banner_router.js"));
 app.use("/api/v1/about/leadership" , require("./routes/aboutPageRoutes/leadership/leadership_banner_routes.js"));
 
+
+
+// Life At Nesco routes
+app.use("/api/v1/life_at_nesco" , require("./routes/lifeAtNesco/banner_routes.js"));
+app.use("/api/v1/life_at_nesco/passion" , require("./routes/lifeAtNesco/passion_routes.js"));
+app.use("/api/v1/life_at_nesco/life_items" , require("./routes/lifeAtNesco/lifeItemsRoutes.js"));
+app.use("/api/v1/life_at_nesco/life_voices" , require("./routes/lifeAtNesco/lifeVoice_routes.js"));
 const PORT = process.env.PORT || 8040;
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
