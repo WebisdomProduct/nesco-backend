@@ -88,6 +88,23 @@ app.use("/api/v1/life_at_nesco" , require("./routes/lifeAtNesco/banner_routes.js
 app.use("/api/v1/life_at_nesco/passion" , require("./routes/lifeAtNesco/passion_routes.js"));
 app.use("/api/v1/life_at_nesco/life_items" , require("./routes/lifeAtNesco/lifeItemsRoutes.js"));
 app.use("/api/v1/life_at_nesco/life_voices" , require("./routes/lifeAtNesco/lifeVoice_routes.js"));
+
+
+// Our Impact Routes
+
+// our impact csr routes
+app.use("/api/v1/our_impact/csr/banner" , require("./routes/ourimpact/csr/csr_banner_routes.js"));
+app.use("/api/v1/our_impact/csr/second_section"  ,require("./routes/ourimpact/csr/second_section_routes.js"));
+app.use("/api/v1/our_impact/csr/social_schema" , require("./routes/ourimpact/csr/socialSchemaRoutes.js"));
+
+// our impact Sustainability routes
+app.use("/api/v1/our_impact/sustainablility/banner" , require("./routes/ourimpact/sustainability/sustainability_banner_routes.js"))
+app.use("/api/v1/our_impact/sustainablility/feature" , require("./routes/ourimpact/sustainability/sustainability_feature_routes.js"))
+app.use("/api/v1/our_impact/sustainablility/text" , require("./routes/ourimpact/sustainability/sustainability_text_routes.js"))
+app.use("/api/v1/our_impact/sustainablility/stakeholder" , require("./routes/ourimpact/sustainability/sustainability_stakeholder_routes.js"))
+app.use("/api/v1/our_impact/sustainablility/pratices" , require("./routes/ourimpact/sustainability/sustainability_practices_routes.js"))
+app.use("/api/v1/our_impact/sustainablility/performance" , require("./routes/ourimpact/sustainability/sustainabiltity_performance_routes.js"))
+
 const PORT = process.env.PORT || 8040;
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
