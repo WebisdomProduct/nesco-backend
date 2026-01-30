@@ -1,418 +1,261 @@
+const mongoose = require("mongoose");
 const SEBI = require("../../models/sebi");
 
+/* =====================================================
+   🔹 HELPERS
+===================================================== */
+
+const normalizeYear = (year) => String(year).trim();
+
+/* Convert string dates into JS Date */
 const processNestedDates = (data) => {
-  // Process documentAlls dates
-  if (data.documentAlls && Array.isArray(data.documentAlls)) {
-    data.documentAlls.forEach((docAll) => {
-      if (docAll.documentfields && Array.isArray(docAll.documentfields)) {
-        docAll.documentfields.forEach((field) => {
-          if (field.documentDate && typeof field.documentDate === "string") {
-            field.documentDate = new Date(field.documentDate);
-          }
-        });
-      }
-    });
-  }
-
-  // Process pdfTables dates
-  if (data.pdfTables && Array.isArray(data.pdfTables)) {
+  if (Array.isArray(data.pdfTables)) {
     data.pdfTables.forEach((table) => {
-      // if (table.pdfDate && typeof table.pdfDate === "string") {
-      //   table.pdfDate = new Date(table.pdfDate);
-      // }
-      if (table.fields && Array.isArray(table.fields)) {
-        table.fields.forEach((field) => {
-          if (field.pdfDate && typeof field.pdfDate === "string") {
-            field.pdfDate = new Date(field.pdfDate);
-          }
-        });
-      }
+      table.fields?.forEach((field) => {
+        if (typeof field.pdfDate === "string") {
+          field.pdfDate = new Date(field.pdfDate);
+        }
+      });
+    });
+  }
+
+  if (Array.isArray(data.documentAlls)) {
+    data.documentAlls.forEach((doc) => {
+      doc.documentfields?.forEach((field) => {
+        if (typeof field.documentDate === "string") {
+          field.documentDate = new Date(field.documentDate);
+        }
+      });
     });
   }
 };
 
-const cleanDataBasedOnType = (data) => {
-  // Clean based on type and subValue
-  if (data.type === "table") {
-    // Remove all document-related fields if type is table
-    delete data.documentLinks;
-    delete data.documentPdfs;
-    delete data.documentAlls;
-
-    // Process based on subValue
-    if (data.subValue === "addressTable") {
-      delete data.positionTables;
-      delete data.pdfTables;
-
-      // Clean addressTables
-      if (data.addressTables.length > 0 && Array.isArray(data.addressTables)) {
-        data.addressTables = data.addressTables.filter(
-          (table) =>
-            table.tableAddressTitle ||
-            (table.fields &&
-              table.fields.some((field) =>
-                field.type === "address"
-                  ? Object.values(field.data).some((val) => val)
-                  : Object.values(field.data).some((val) => val)
-              ))
-        );
-      }
-    } else if (data.subValue === "positionTable") {
-      console.log(data);
-      delete data.addressTables;
-      delete data.pdfTables;
-
-      // Clean positionTables
-      if (data.positionTable.length > 0 && Array.isArray(data.positionTable)) {
-        data.positionTable = data.positionTable.filter(
-          (table) =>
-            table.tablePositionTitle ||
-            (table.fields &&
-              table.fields.some((field) => field.name1 || field.position))
-        );
-      }
-    } else if (data.subValue === "pdfTable") {
-      delete data.addressTables;
-      delete data.positionTables;
-
-      // Clean pdfTables
-      if (data.pdfTables && Array.isArray(data.pdfTables)) {
-        data.pdfTables = data.pdfTables
-          .filter((table) => {
-            // Keep the table if it has any of these main fields
-            const hasMainFields =
-              table.pdfYear || table.pdfName || table.pdfFile;
-            // Also check if any fields exist with valid data
-            const hasValidFields =
-              table.fields &&
-              table.fields.some(
-                (field) =>
-                  field.pdfName ||
-                  field.pdfFile ||
-                  field.pdfDate ||
-                  field.quater
-              );
-
-            return hasMainFields || hasValidFields;
-          })
-          .map((table) => {
-            // Clean up fields array if it exists
-            if (table.fields && Array.isArray(table.fields)) {
-              table.fields = table.fields.filter(
-                (field) =>
-                  field.pdfName ||
-                  field.pdfFile ||
-                  field.pdfDate ||
-                  field.quater
-              );
-            }
-            return table;
-          });
-      }
-    } else if (data.type === "document") {
-      // Remove all table-related fields if type is document
-      delete data.addressTables;
-      delete data.positionTables;
-      delete data.pdfTables;
-
-      // Process based on subValue
-      if (data.subValue === "documentLink") {
-        delete data.documentPdfs;
-        delete data.documentAlls;
-
-        // Clean documentLinks
-        if (
-          data.documentLinks.length > 0 &&
-          Array.isArray(data.documentLinks)
-        ) {
-          data.documentLinks = data.documentLinks.filter(
-            (doc) => doc.DocumentName || doc.link
-          );
-        }
-      } else if (data.subValue === "documentPdf") {
-        delete data.documentLinks;
-        delete data.documentAlls;
-
-        // Clean documentPdfs
-        if (data.documentPdfs.length > 0 && Array.isArray(data.documentPdfs)) {
-          data.documentPdfs = data.documentPdfs.filter(
-            (doc) => doc.DocumentPdfName || doc.documentPdfFile
-          );
-        }
-      } else if (data.subValue === "documentAll") {
-        delete data.documentLinks;
-        delete data.documentPdfs;
-
-        // Clean documentAlls
-        if (data.documentAlls.length > 0 && Array.isArray(data.documentAlls)) {
-          data.documentAlls = data.documentAlls.filter(
-            (doc) =>
-              doc.year ||
-              (doc.documentfields &&
-                doc.documentfields.some(
-                  (field) =>
-                    field.documentDate ||
-                    field.documentName ||
-                    field.documentFile
-                ))
-          );
-        }
-      }
-    }
-  }
-  // Clean up empty fields
-  // cleanEmptyFields(data);
-};
-
-const cleanEmptyFields = (obj) => {
-  for (const key in obj) {
-    if (obj[key] === null || obj[key] === undefined || obj[key] === "") {
-      delete obj[key];
-    } else if (Array.isArray(obj[key]) && obj[key].length === 0) {
-      delete obj[key];
-    } else if (typeof obj[key] === "object" && obj[key] !== null) {
-      cleanEmptyFields(obj[key]);
-      if (Object.keys(obj[key]).length === 0) {
-        delete obj[key];
-      }
-    }
-  }
-};
-
-const transformPdfTable = (pdfTables) => {
-  if (!Array.isArray(pdfTables)) return [];
-
-  return pdfTables.map((table) => ({
-    pdfYear: table.pdfYear,
-    fields: (table.fields || []).map((field) => ({
-      pdfName: field.pdfName,
-      pdfFile: field.pdfFile,
-      quater: field.quater,
-      pdfDate:
-        field.pdfDate && typeof field.pdfDate === "string"
-          ? new Date(field.pdfDate)
-          : field.pdfDate,
-      _id: field._id,
+/* Rebuild position table */
+const transformPositionTable = (tables = []) =>
+  tables.map((table) => ({
+    tablePositionTitle: table.tablePositionTitle,
+    fields: table.fields.map((field) => ({
+      name1: field.name1,
+      position: field.position,
+      _id: field._id || new mongoose.Types.ObjectId(),
     })),
-    _id: table._id,
+    _id: table._id || new mongoose.Types.ObjectId(),
   }));
-};
-// Helper function to transform positionTable
-const transformPositionTable = (positionTable) => {
-  if (Array.isArray(positionTable)) {
-    return positionTable.map((table) => ({
-      tablePositionTitle: table.tablePositionTitle,
-      fields: table.fields.map((field) => ({
-        name1: field.name1,
-        position: field.position,
-        _id: field._id, // Preserve existing _id or create new one
-      })),
-      _id: table._id, // Preserve existing _id or create new one
-    }));
-  }
-  return [];
-};
 
-// Create a new SEBI record
+/* =====================================================
+   🟢 CREATE / APPEND SEBI
+===================================================== */
+
 exports.createSEBI = async (req, res) => {
   try {
     const data = req.body;
 
-    // Transform positionTable field
-    if (data.positionTable) {
-      data.positionTable = transformPositionTable(data.positionTable);
+    if (!data.title) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Title required" });
     }
 
-    // Set title from the first positionTable item if available
-    if (data.pdfTables) {
-      data.pdfTables = transformPdfTable(data.pdfTables);
-    }
-
-    // Convert date strings to Date objects if needed
-    if (data.date && typeof data.date === "string") {
-      data.date = new Date(data.date);
-    }
-    // Process any date fields in nested structures
     processNestedDates(data);
 
-    // Clean data based on type and subValue
-    cleanDataBasedOnType(data);
-    // console.log(data);
-    const sebi = new SEBI(data);
+    let sebi = await SEBI.findOne({ title: data.title });
+
+    /* ================= CREATE NEW ================= */
+
+    if (!sebi) {
+      const newSEBI = new SEBI(data);
+      await newSEBI.save();
+
+      return res.status(201).json({
+        success: true,
+        message: "SEBI created",
+        data: newSEBI,
+      });
+    }
+
+    /* ================= PDF TABLE (YEAR SAFE APPEND) ================= */
+
+    if (Array.isArray(data.pdfTables)) {
+      data.pdfTables.forEach((incoming) => {
+        const incomingYear = normalizeYear(incoming.pdfYear);
+
+        const existing = sebi.pdfTables.find(
+          (t) => normalizeYear(t.pdfYear) === incomingYear
+        );
+
+        if (existing) {
+          incoming.fields?.forEach((field) => {
+            const duplicate = existing.fields.some(
+              (f) =>
+                f.quater === field.quater &&
+                f.pdfName === field.pdfName
+            );
+
+            if (!duplicate) {
+              existing.fields.push({
+                pdfName: field.pdfName,
+                pdfFile: field.pdfFile,
+                quater: field.quater,
+                pdfDate: field.pdfDate || null,
+                _id: field._id || new mongoose.Types.ObjectId(),
+              });
+            }
+          });
+        } else {
+          sebi.pdfTables.push({
+            pdfYear: incomingYear,
+            fields: incoming.fields || [],
+            _id: new mongoose.Types.ObjectId(),
+          });
+        }
+      });
+    }
+
+    /* ================= ADDRESS TABLE ================= */
+
+    if (Array.isArray(data.addressTables)) {
+      data.addressTables.forEach((incoming) => {
+        if (!incoming.tableAddressTitle) return;
+
+        const existing = sebi.addressTables.find(
+          (a) => a.tableAddressTitle === incoming.tableAddressTitle
+        );
+
+        if (existing) {
+          existing.fields.push(...(incoming.fields || []));
+        } else {
+          sebi.addressTables.push({
+            tableAddressTitle: incoming.tableAddressTitle,
+            fields: incoming.fields || [],
+            _id: new mongoose.Types.ObjectId(),
+          });
+        }
+      });
+    }
+
+    /* ================= POSITION TABLE (REPLACE) ================= */
+
+    if (Array.isArray(data.positionTable)) {
+      sebi.positionTable = transformPositionTable(data.positionTable);
+    }
+
+    /* ================= DOCUMENT ALL (YEAR SAFE APPEND) ================= */
+
+    if (Array.isArray(data.documentAlls)) {
+      data.documentAlls.forEach((incoming) => {
+        const incomingYear = normalizeYear(incoming.year);
+
+        const existing = sebi.documentAlls.find(
+          (d) => normalizeYear(d.year) === incomingYear
+        );
+
+        if (existing) {
+          existing.documentfields.push(...incoming.documentfields);
+        } else {
+          sebi.documentAlls.push({
+            ...incoming,
+            year: incomingYear,
+          });
+        }
+      });
+    }
+
     await sebi.save();
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
+      message: "SEBI updated successfully (no duplicate years)",
       data: sebi,
-      message: "SEBI record created successfully",
     });
-  } catch (error) {
-    console.error("Error creating SEBI record:", error);
+  } catch (err) {
+    console.error("CREATE SEBI ERROR:", err);
     res.status(500).json({
       success: false,
-      message: "Failed to create SEBI record",
-      error: error.message,
+      message: "SEBI create/update failed",
+      error: err.message,
     });
   }
 };
 
-// Fetch all SEBI records
+/* =====================================================
+   🔵 GET ALL
+===================================================== */
+
 exports.getSEBIRecords = async (req, res) => {
   try {
-    const records = await SEBI.find();
-    res.status(200).json({
-      success: true,
-      data: records,
-      message: "SEBI records fetched successfully",
-    });
-  } catch (error) {
-    console.error("Error fetching SEBI records:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch SEBI records",
-      error: error.message,
-    });
+    const records = await SEBI.find().sort({ createdAt: -1 });
+    res.status(200).json({ success: true, data: records });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 };
 
-// Fetch a SEBI record by ID
+/* =====================================================
+   🔵 GET BY ID
+===================================================== */
+
 exports.getSEBIRecordById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const record = await SEBI.findById(id);
-    if (!record) {
-      return res.status(404).json({
-        success: false,
-        message: "SEBI record not found",
-      });
-    }
-    res.status(200).json({
-      success: true,
-      data: record,
-      message: "SEBI record fetched successfully",
-    });
-  } catch (error) {
-    console.error("Error fetching SEBI record by ID:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch SEBI record",
-      error: error.message,
-    });
+    const record = await SEBI.findById(req.params.id);
+
+    if (!record)
+      return res
+        .status(404)
+        .json({ success: false, message: "Not found" });
+
+    res.status(200).json({ success: true, data: record });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 };
 
-// Update a SEBI record by ID
+/* =====================================================
+   🟠 UPDATE (EXPLICIT)
+===================================================== */
+
 exports.updateSEBIRecord = async (req, res) => {
   try {
-    const { id } = req.params;
-    const data = req.body;
+    const record = await SEBI.findById(req.params.id);
 
-    // Find the SEBI record by ID
-    const record = await SEBI.findById(id);
-    if (!record) {
-      return res.status(404).json({
-        success: false,
-        message: "SEBI record not found",
-      });
-    }
+    if (!record)
+      return res
+        .status(404)
+        .json({ success: false, message: "Not found" });
 
-    // Transform positionTable field
-    if (data.positionTable && Array.isArray(data.positionTable)) {
-      record.positionTable = transformPositionTable(data.positionTable);
-      if (data.positionTable?.[0]?.title) {
-        record.title = data.positionTable[0].title;
-      }
-    }
+    Object.assign(record, req.body);
+    record.updatedAt = Date.now();
 
-    // Update title from the first positionTable item if available
-
-    // Update other fields if provided
-    if (data.documentAll && Array.isArray(data.documentAll)) {
-      // Transform the incoming data to match the desired structure
-      record.documentAll = data.documentAll.map((item) => ({
-        year: item.year,
-        documentfields: item.documentfields,
-        _id: item._id || new mongoose.Types.ObjectId(), // Preserve existing _id or create new one
-      }));
-
-      // Update title if it exists in the first documentAll item
-      if (data.documentAll[0]?.title) {
-        record.title = data.documentAll[0].title;
-      }
-    }
-    // Update documentPdf if it exists and is an array
-
-    if (data.documentPdf && Array.isArray(data.documentPdf)) {
-      record.documentPdf = data.documentPdf.map((item) => ({
-        DocumentPdfName: item.DocumentPdfName,
-        documentPdfFile: item.documentPdfFile,
-        _id: item._id || new mongoose.Types.ObjectId(),
-      }));
-      if (data.documentPdf[0]?.title) {
-        record.title = data.documentPdf[0].title;
-      }
-    }
-
-    // Update pdfTables if it exists and is an array
-    if (data.pdfTables && Array.isArray(data.pdfTables)) {
-      record.pdfTables = data.pdfTables.map((table) => ({
-        pdfYear: table.pdfYear,
-        fields: table.fields.map((field) => ({
-          pdfName: field.pdfName,
-          pdfFile: field.pdfFile,
-          quater: field.quater,
-          pdfDate: field.pdfDate && new Date(field.pdfDate),
-          _id: field._id,
-        })),
-        _id: table._id,
-      }));
-      if (data.pdfTables[0]?.title) {
-        record.title = data.pdfTables[0].title;
-      }
-    }
-    if (data.addressTables) record.addressTables = data.addressTables;
-    // Save the updated record
-    const updatedRecord = await record.save();
+    await record.save();
 
     res.status(200).json({
       success: true,
-      data: updatedRecord,
-      message: "SEBI record updated successfully",
+      message: "SEBI updated explicitly",
+      data: record,
     });
-  } catch (error) {
-    console.error("Error updating SEBI record:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to update SEBI record",
-      error: error.message,
-    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 };
 
-// Delete a SEBI record by ID
+/* =====================================================
+   🔴 DELETE
+===================================================== */
+
 exports.deleteSEBIRecord = async (req, res) => {
   try {
-    const { id } = req.params;
-    const deletedRecord = await SEBI.findByIdAndDelete(id);
+    const deleted = await SEBI.findByIdAndDelete(req.params.id);
 
-    if (!deletedRecord) {
-      return res.status(404).json({
-        success: false,
-        message: "SEBI record not found",
-      });
-    }
+    if (!deleted)
+      return res
+        .status(404)
+        .json({ success: false, message: "Not found" });
 
     res.status(200).json({
       success: true,
-      data: deletedRecord,
-      message: "SEBI record deleted successfully",
+      message: "SEBI deleted",
+      data: deleted,
     });
-  } catch (error) {
-    console.error("Error deleting SEBI record:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to delete SEBI record",
-      error: error.message,
-    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 };

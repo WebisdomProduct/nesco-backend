@@ -8,7 +8,7 @@ const {
   getPhilosophyById,
   updatePhilosophy,
   deletePhilosophy
-} = require("../../../controllers/About/philosophy/philosophy_controller");
+} = require("../../../controllers/about/philosophy/philosophy_controller");
 
 // GET ALL
 router.get("/", getAllPhilosophy);
