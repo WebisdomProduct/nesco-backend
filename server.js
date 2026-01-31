@@ -120,6 +120,7 @@ app.use("/api/v1/business/display", require("./routes/businesses/bombay-exhibiti
 app.use("/api/v1/business/stats", require("./routes/businesses/bombay-exhibition-center/stats_routes.js"));
 app.use("/api/v1/business/facilities", require("./routes/businesses/bombay-exhibition-center/facilities_routes.js"));
 app.use("/api/v1/business/amenities", require("./routes/businesses/bombay-exhibition-center/amenties_routes.js"));
+app.use("/api/v1/business/extra", require("./routes/businesses/bombay-exhibition-center/extralike_routes.js"));
 
 const PORT = process.env.PORT || 8040;
 

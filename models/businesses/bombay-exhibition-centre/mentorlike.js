@@ -2,37 +2,27 @@
 const mongoose = require('mongoose');
 
 const mentorSchema = new mongoose.Schema({
-  name: {
+  heading2: {
     type: String,
     required: true,
   },
-  pageName:{
+  heading2:{
     type:String,
     required:true
   },
-  designation: {
+  heading3: {
     type: String,
     required: true,
   },
-  noteTitle: {
+  paragraph: {
     type: String, // e.g., "A note from the Founding Director and Mentor"
     required: true,
   },
-  noteText: {
-    type: [String], 
-    required: true,
-  },
-  mentorImage: {
+  image: {
     type: String, 
     required: true,
   },
-  backgroundImage: {
-    type: String,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+
 });
 
-module.exports = mongoose.model('Mentor', mentorSchema);
+module.exports = mongoose.model('ExtraModel', mentorSchema);
