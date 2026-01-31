@@ -105,6 +105,17 @@ app.use("/api/v1/our_impact/sustainablility/stakeholder" , require("./routes/our
 app.use("/api/v1/our_impact/sustainablility/pratices" , require("./routes/ourimpact/sustainability/sustainability_practices_routes.js"))
 app.use("/api/v1/our_impact/sustainablility/performance" , require("./routes/ourimpact/sustainability/sustainabiltity_performance_routes.js"))
 
+
+
+// BusinessPageRoutes
+app.use("/api/v1/business/banner" , require("./routes/businesses/bombay-exhibition-center/bombay_banner_routes.js"));
+app.use("/api/v1/business/hero-intro" , require("./routes/businesses/bombay-exhibition-center/hero_intro_routes.js"));
+app.use("/api/v1/business/halls" , require("./routes/businesses/bombay-exhibition-center/halls_routes.js"));
+app.use("/api/v1/business/display" , require("./routes/businesses/bombay-exhibition-center/display_routes.js"));
+app.use("/api/v1/business/stats" , require("./routes/businesses/bombay-exhibition-center/stats_routes.js"));
+app.use("/api/v1/business/facilities" , require("./routes/businesses/bombay-exhibition-center/facilities_routes.js"));
+app.use("/api/v1/business/amenities" , require("./routes/businesses/bombay-exhibition-center/amenties_routes.js"));
+
 const PORT = process.env.PORT || 8040;
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

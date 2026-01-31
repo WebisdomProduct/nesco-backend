@@ -4,7 +4,7 @@ const upload = require("../../../middlewares/upload"); // your multer config
 
 const {
   createPhilosophy,
-  getAllPhilosophy,
+  getAllPhilosophy, 
   getPhilosophyById,
   updatePhilosophy,
   deletePhilosophy
