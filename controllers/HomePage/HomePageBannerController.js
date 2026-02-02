@@ -145,11 +145,6 @@ exports.deleteHomePageBanner = async (req, res) => {
       return res.status(404).json({ message: "Banner not found" });
     }
 
-    // Delete images from S3
-    await deleteFromS3(banner.image);
-    await deleteFromS3(banner.hexaImage);
-    await deleteFromS3(banner.hexaLogo);
-
     await banner.deleteOne();
 
     res.status(200).json({

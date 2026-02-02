@@ -25,6 +25,14 @@ router.put(
   updateHomePageBanner
 );
 
-router.delete("/home-banner/:id", deleteHomePageBanner);
+router.delete(
+  "/home-banner/:id",
+  (req, res, next) => {
+    console.log("hello keshu");
+    next();
+  },
+  deleteHomePageBanner
+);
+
 
 module.exports = router;
