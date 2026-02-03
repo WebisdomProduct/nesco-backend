@@ -56,6 +56,7 @@ exports.getAllVoices = async (req, res) => {
 
     // Format like SliderData
     const formattedData = voices.map((item) => ({
+      id:item._id,
       video: item.video,
       type: item.type,
     }));
@@ -141,8 +142,9 @@ exports.updateVoice = async (req, res) => {
 /* ================= DELETE ================= */
 exports.deleteVoice = async (req, res) => {
   try {
+    console.log("Welcome to the dleet route")
     const deleted = await LifeVoiceModel.findByIdAndDelete(req.params.id);
-
+    console.log(deleted)
     if (!deleted) {
       return res.status(404).json({
         success: false,
