@@ -1147,4 +1147,49 @@ exports.deleteSingleLevelItem = async (req, res) => {
   }
 };
 
+
+
+exports.deleteSEBI = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // ✅ Validate ID
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "SEBI ID is required",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid SEBI ID",
+      });
+    }
+
+    // ✅ Find & Delete
+    const deletedSEBI = await SEBI.findByIdAndDelete(id);
+
+    if (!deletedSEBI) {
+      return res.status(404).json({
+        success: false,
+        message: "SEBI record not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "SEBI record deleted successfully",
+    });
+
+  } catch (error) {
+    console.error("Delete SEBI Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while deleting SEBI",
+    });
+  }
+};
+
 module.exports = exports;

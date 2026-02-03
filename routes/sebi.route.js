@@ -83,4 +83,6 @@ router.delete(
 // Update SEBI record (for main fields only)
 router.put("/:id", sebiController.updateSEBIRecord);
 
+router.delete("/:id" , sebiController.deleteSEBI)
+
 module.exports = router;
