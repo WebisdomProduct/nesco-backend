@@ -5,13 +5,14 @@ const leadershipController = require("../../../controllers/about/leadership/lead
 
 router.post(
   "/",
-  (req ,res ,next)=>{
+  (req, res, next) => {
     console.log("hello keshu");
     next();
   },
   upload.fields([
     { name: "image", maxCount: 1 },
     { name: "featherimage", maxCount: 1 },
+    { name: "mobileImage", maxCount: 1 },
   ]),
   leadershipController.createLeadershipBanner
 );
@@ -24,6 +25,7 @@ router.put(
   upload.fields([
     { name: "image", maxCount: 1 },
     { name: "featherimage", maxCount: 1 },
+    { name: "mobileImage", maxCount: 1 },
   ]),
   leadershipController.updateLeadershipBanner
 );

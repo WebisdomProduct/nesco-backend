@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("../../../middlewares/upload"); // your multer config
+const upload = require("../../../middlewares/upload");
 
 const {
   createPhilosophy,
-  getAllPhilosophy, 
+  getAllPhilosophy,
   getPhilosophyById,
   updatePhilosophy,
   deletePhilosophy
@@ -18,6 +18,7 @@ router.post(
   "/",
   upload.fields([
     { name: "image", maxCount: 1 },
+    { name: "mobileImage", maxCount: 1 },
     { name: "video", maxCount: 1 }
   ]),
   createPhilosophy
@@ -28,6 +29,7 @@ router.put(
   "/:id",
   upload.fields([
     { name: "image", maxCount: 1 },
+    { name: "mobileImage", maxCount: 1 },
     { name: "video", maxCount: 1 }
   ]),
   updatePhilosophy

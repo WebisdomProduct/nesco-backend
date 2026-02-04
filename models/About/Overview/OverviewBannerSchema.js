@@ -4,6 +4,9 @@ const overviewbannerSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    mobileImage:{
+        type:String , 
+    },
     paragraph1: {
         type: String,
     },

@@ -15,7 +15,8 @@ const HomePageBannerSchema = new mongoose.Schema({
     hexaLogo:{
         type:String , 
         // required:[true , "hexaLogo must be required"]
-    }
+    },
+    imageForMobile:{type:String}
 });
 const HomePageBannerModel = mongoose.model("HomePageBanner" , HomePageBannerSchema);
 module.exports=HomePageBannerModel;

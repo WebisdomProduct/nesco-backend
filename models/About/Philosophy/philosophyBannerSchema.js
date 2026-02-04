@@ -1,26 +1,22 @@
 const mongoose = require("mongoose");
 
-const philosophySchema = new mongoose.Schema(
-  {
-    title: {
-      type: String,
-      required: true
-    },
-    subtitle: {
-      type: String
-    },
-    description: {
-      type: String,
-      required: true
-    },
-    image: {
-      type: String, // S3 URL
-    },
-    video: {
-      type: String // S3 URL OR external URL
-    }
+const philosophySchema = new mongoose.Schema({
+  title: String,
+  subtitle: String,
+  description: String,
+
+  image: {
+    type: String,   // Desktop Image
   },
-  { timestamps: true }
-);
+
+  mobileImage: {
+    type: String,   // Mobile Image
+  },
+
+  video: {
+    type: String,   // URL or uploaded file
+  }
+
+}, { timestamps: true });
 
 module.exports = mongoose.model("Philosophy", philosophySchema);

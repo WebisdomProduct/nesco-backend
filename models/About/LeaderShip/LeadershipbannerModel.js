@@ -3,6 +3,7 @@ const mongoose = require("mongoose")
 const LeadershipBannerSchema = new mongoose.Schema(
   {
     image:{type:String , required:[true , "Image must be required"]},
+    imageForMobile:{type:String},
     featherimage:{type:String},
     paragraph1:{type:String},
     paragraph2:{type:String},

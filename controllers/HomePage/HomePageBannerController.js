@@ -22,6 +22,12 @@ exports.createHomePageBanner = async (req, res) => {
     /* ---------------- S3 UPLOADS ---------------- */
     const bannerData = { description };
 
+
+    if (req.files?.mobileImage?.length > 0) {
+      console.log("🚀 Uploading image...");
+      bannerData.imageForMobile = await uploadToS3(req.files.mobileImage[0], "home-banners")
+    }
+
     if (req.files?.image?.length > 0) {
       console.log("🚀 Uploading image...");
       bannerData.image = await uploadToS3(req.files.image[0], "home-banners");
@@ -109,7 +115,10 @@ exports.updateHomePageBanner = async (req, res) => {
         "home-banners"
       );
     }
-
+    if (req.files?.mobileImage?.length > 0) {
+      console.log("🚀 Uploading image...");
+      banner.imageForMobile = await uploadToS3(req.files.mobileImage[0], "home-banners")
+    }
     if (req.files?.hexaImage) {
       banner.hexaImage = await uploadToS3(
         req.files.hexaImage[0],

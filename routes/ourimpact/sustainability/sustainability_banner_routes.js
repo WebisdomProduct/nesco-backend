@@ -1,15 +1,26 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
 
-const {createSustainabilityBanner , getAllSustainabilityBanners , getSingleSustainabilityBanner , updateSustainabilityBanner , deleteSustainabilityBanner} = require("../../../controllers/ourimpact/sustainablility/sustainabliltiyController")
+const {
+  createsustainablilityBanner,
+  getAllsustainablilityBanners,
+  getSinglesustainablilityBanner,
+  updatesustainablilityBanner,
+  deletesustainablilityBanner,
+} = require("../../../controllers/ourimpact/sustainablility/sustainabliltiyController");
 
-const upload = require("../../../middlewares/upload")
+const upload = require("../../../middlewares/upload");
 
-router.post("/create", upload.single("image"), createSustainabilityBanner);
-router.get("/all", getAllSustainabilityBanners);
-router.get("/:id", getSingleSustainabilityBanner);
-router.put("/update/:id", upload.single("image"), updateSustainabilityBanner);
-router.delete("/delete/:id", deleteSustainabilityBanner);
+/* Upload Both Images */
+const bannerUpload = upload.fields([
+  { name: "image", maxCount: 1 },
+  { name: "mobileImage", maxCount: 1 }
+]);
+
+router.post("/create", bannerUpload, createsustainablilityBanner);
+router.get("/all", getAllsustainablilityBanners);
+router.get("/:id", getSinglesustainablilityBanner);
+router.put("/update/:id", bannerUpload, updatesustainablilityBanner);
+router.delete("/delete/:id", deletesustainablilityBanner);
 
 module.exports = router;

@@ -30,7 +30,7 @@ const processNestedDates = (data) => {
     });
   }
 
-  // Process Document All dates (FIXED: documentAll not documentAlls)
+  // Process Document All dates
   if (Array.isArray(data.documentAll)) {
     data.documentAll.forEach((doc) => {
       if (Array.isArray(doc.documentfields)) {
@@ -54,10 +54,10 @@ const transformPositionTable = (tables = []) => {
     tablePositionTitle: table.tablePositionTitle || "",
     fields: Array.isArray(table.fields)
       ? table.fields.map((field) => ({
-        name1: field.name1 || "",
-        position: field.position || "",
-        _id: field._id || new mongoose.Types.ObjectId(),
-      }))
+          name1: field.name1 || "",
+          position: field.position || "",
+          _id: field._id || new mongoose.Types.ObjectId(),
+        }))
       : [],
     _id: table._id || new mongoose.Types.ObjectId(),
   }));
@@ -76,22 +76,26 @@ const isPdfFieldDuplicate = (existingFields, newField) => {
 };
 
 /**
- * Merge or add PDF table fields by year
+ * Merge or add PDF table fields by year - FIXED
  */
 const mergePdfTables = (existingTables, incomingTables) => {
   if (!Array.isArray(incomingTables)) return existingTables;
+  if (!Array.isArray(existingTables)) existingTables = [];
 
   incomingTables.forEach((incoming) => {
     const incomingYear = normalizeYear(incoming.pdfYear);
 
     if (!incomingYear) return; // Skip if no year
 
-    const existingTable = existingTables.find(
+    // Find existing table by year using findIndex
+    const existingTableIndex = existingTables.findIndex(
       (t) => normalizeYear(t.pdfYear) === incomingYear
     );
 
-    if (existingTable) {
-      // Append new fields to existing year (avoid duplicates)
+    if (existingTableIndex !== -1) {
+      // Year exists - append fields to existing year
+      const existingTable = existingTables[existingTableIndex];
+      
       if (Array.isArray(incoming.fields)) {
         incoming.fields.forEach((field) => {
           if (!isPdfFieldDuplicate(existingTable.fields, field)) {
@@ -106,17 +110,17 @@ const mergePdfTables = (existingTables, incomingTables) => {
         });
       }
     } else {
-      // Add new year table
+      // Year doesn't exist - add new year table
       existingTables.push({
         pdfYear: incomingYear,
         fields: Array.isArray(incoming.fields)
           ? incoming.fields.map((f) => ({
-            pdfName: f.pdfName || "",
-            pdfFile: f.pdfFile || "",
-            quater: f.quater || "",
-            pdfDate: f.pdfDate || null,
-            _id: f._id || new mongoose.Types.ObjectId(),
-          }))
+              pdfName: f.pdfName || "",
+              pdfFile: f.pdfFile || "",
+              quater: f.quater || "",
+              pdfDate: f.pdfDate || null,
+              _id: f._id || new mongoose.Types.ObjectId(),
+            }))
           : [],
         _id: incoming._id || new mongoose.Types.ObjectId(),
       });
@@ -127,37 +131,40 @@ const mergePdfTables = (existingTables, incomingTables) => {
 };
 
 /**
- * Merge or add address tables by title
+ * Merge or add address tables by title - FIXED
  */
 const mergeAddressTables = (existingTables, incomingTables) => {
   if (!Array.isArray(incomingTables)) return existingTables;
+  if (!Array.isArray(existingTables)) existingTables = [];
 
   incomingTables.forEach((incoming) => {
     if (!incoming.tableAddressTitle) return;
 
-    const existingTable = existingTables.find(
+    const existingTableIndex = existingTables.findIndex(
       (a) => a.tableAddressTitle === incoming.tableAddressTitle
     );
 
-    if (existingTable) {
-      // Append new fields to existing table
+    if (existingTableIndex !== -1) {
+      // Table exists - append fields to existing table
+      const existingTable = existingTables[existingTableIndex];
+      
       if (Array.isArray(incoming.fields)) {
-        existingTable.fields.push(
-          ...incoming.fields.map((f) => ({
-            ...f,
-            _id: f._id || new mongoose.Types.ObjectId(),
-          }))
-        );
+        incoming.fields.forEach((field) => {
+          existingTable.fields.push({
+            ...field,
+            _id: field._id || new mongoose.Types.ObjectId(),
+          });
+        });
       }
     } else {
-      // Add new address table
+      // Table doesn't exist - add new address table
       existingTables.push({
         tableAddressTitle: incoming.tableAddressTitle,
         fields: Array.isArray(incoming.fields)
           ? incoming.fields.map((f) => ({
-            ...f,
-            _id: f._id || new mongoose.Types.ObjectId(),
-          }))
+              ...f,
+              _id: f._id || new mongoose.Types.ObjectId(),
+            }))
           : [],
         _id: incoming._id || new mongoose.Types.ObjectId(),
       });
@@ -168,39 +175,48 @@ const mergeAddressTables = (existingTables, incomingTables) => {
 };
 
 /**
- * Merge or add document all by year (FIXED: documentAll not documentAlls)
+ * Merge or add document all by year - FIXED TO PREVENT DUPLICATES
  */
 const mergeDocumentAll = (existingDocs, incomingDocs) => {
   if (!Array.isArray(incomingDocs)) return existingDocs;
+  if (!Array.isArray(existingDocs)) existingDocs = [];
 
   incomingDocs.forEach((incoming) => {
     const incomingYear = normalizeYear(incoming.year);
 
     if (!incomingYear) return; // Skip if no year
 
-    const existingDoc = existingDocs.find(
+    // Find existing document by year using findIndex
+    const existingDocIndex = existingDocs.findIndex(
       (d) => normalizeYear(d.year) === incomingYear
     );
 
-    if (existingDoc) {
-      // Append new document fields to existing year
+    if (existingDocIndex !== -1) {
+      // Year exists - append document fields to existing year
+      const existingDoc = existingDocs[existingDocIndex];
+      
       if (Array.isArray(incoming.documentfields)) {
-        existingDoc.documentfields.push(
-          ...incoming.documentfields.map((f) => ({
-            ...f,
-            _id: f._id || new mongoose.Types.ObjectId(),
-          }))
-        );
+        incoming.documentfields.forEach((field) => {
+          // Add the new document field with a new ObjectId
+          existingDoc.documentfields.push({
+            documentDate: field.documentDate || null,
+            documentName: field.documentName || "",
+            documentFile: field.documentFile || "",
+            _id: field._id || new mongoose.Types.ObjectId(),
+          });
+        });
       }
     } else {
-      // Add new year document
+      // Year doesn't exist - add new year document
       existingDocs.push({
         year: incomingYear,
         documentfields: Array.isArray(incoming.documentfields)
           ? incoming.documentfields.map((f) => ({
-            ...f,
-            _id: f._id || new mongoose.Types.ObjectId(),
-          }))
+              documentDate: f.documentDate || null,
+              documentName: f.documentName || "",
+              documentFile: f.documentFile || "",
+              _id: f._id || new mongoose.Types.ObjectId(),
+            }))
           : [],
         _id: incoming._id || new mongoose.Types.ObjectId(),
       });
@@ -211,12 +227,14 @@ const mergeDocumentAll = (existingDocs, incomingDocs) => {
 };
 
 /* =====================================================
-   🟢 CREATE / APPEND SEBI
+   🟢 CREATE / APPEND SEBI - FIXED
 ===================================================== */
 
 exports.createSEBI = async (req, res) => {
   try {
     const data = req.body;
+
+    console.log("📥 CREATE SEBI - Incoming data:", JSON.stringify(data, null, 2));
 
     // Validation
     if (!data.title) {
@@ -234,6 +252,8 @@ exports.createSEBI = async (req, res) => {
 
     /* ================= CREATE NEW RECORD ================= */
     if (!sebi) {
+      console.log("✅ Creating NEW SEBI record for title:", data.title);
+      
       const newSEBI = new SEBI(data);
       await newSEBI.save();
 
@@ -245,6 +265,8 @@ exports.createSEBI = async (req, res) => {
     }
 
     /* ================= UPDATE EXISTING RECORD ================= */
+    console.log("🔄 Updating EXISTING SEBI record for title:", data.title);
+    console.log("📊 Existing documentAll BEFORE merge:", JSON.stringify(sebi.documentAll, null, 2));
 
     // Update basic fields
     if (data.description) sebi.description = data.description;
@@ -252,11 +274,13 @@ exports.createSEBI = async (req, res) => {
 
     // Merge PDF Tables (year-safe append)
     if (data.pdfTables) {
+      console.log("🔄 Merging pdfTables...");
       sebi.pdfTables = mergePdfTables(sebi.pdfTables, data.pdfTables);
     }
 
     // Merge Address Tables (title-safe append)
     if (data.addressTables) {
+      console.log("🔄 Merging addressTables...");
       sebi.addressTables = mergeAddressTables(
         sebi.addressTables,
         data.addressTables
@@ -265,19 +289,51 @@ exports.createSEBI = async (req, res) => {
 
     // Replace Position Table
     if (data.positionTable) {
+      console.log("🔄 Replacing positionTable...");
       sebi.positionTable = transformPositionTable(data.positionTable);
     }
 
     // Merge Document All (year-safe append) - FIXED
     if (data.documentAll) {
+      console.log("🔄 Merging documentAll...");
+      console.log("📊 Incoming documentAll:", JSON.stringify(data.documentAll, null, 2));
+      
       sebi.documentAll = mergeDocumentAll(
         sebi.documentAll,
         data.documentAll
       );
+      
+      console.log("📊 documentAll AFTER merge:", JSON.stringify(sebi.documentAll, null, 2));
+    }
+
+    // Append Document Links (no year checking needed)
+    if (data.documentLink && Array.isArray(data.documentLink)) {
+      console.log("🔄 Appending documentLink...");
+      data.documentLink.forEach((link) => {
+        sebi.documentLink.push({
+          DocumentName: link.DocumentName || "",
+          link: link.link || "",
+          _id: link._id || new mongoose.Types.ObjectId(),
+        });
+      });
+    }
+
+    // Append Document PDFs (no year checking needed)
+    if (data.documentPdf && Array.isArray(data.documentPdf)) {
+      console.log("🔄 Appending documentPdf...");
+      data.documentPdf.forEach((pdf) => {
+        sebi.documentPdf.push({
+          DocumentPdfName: pdf.DocumentPdfName || "",
+          documentPdfFile: pdf.documentPdfFile || "",
+          _id: pdf._id || new mongoose.Types.ObjectId(),
+        });
+      });
     }
 
     sebi.updatedAt = Date.now();
     await sebi.save();
+
+    console.log("✅ SEBI record updated successfully");
 
     res.status(200).json({
       success: true,
@@ -285,7 +341,7 @@ exports.createSEBI = async (req, res) => {
       data: sebi,
     });
   } catch (err) {
-    console.error("CREATE/UPDATE SEBI ERROR:", err);
+    console.error("❌ CREATE/UPDATE SEBI ERROR:", err);
     res.status(500).json({
       success: false,
       message: "Failed to create/update SEBI record",
@@ -293,7 +349,6 @@ exports.createSEBI = async (req, res) => {
     });
   }
 };
-
 
 // Edit nested field (addressTables, positionTable, pdfTables, documentAll)
 exports.editNestedField = async (req, res) => {
@@ -305,25 +360,25 @@ exports.editNestedField = async (req, res) => {
 
     // Validation
     if (!id || !tableType || !tableId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "SEBI ID, table type, and table ID are required" 
+      return res.status(400).json({
+        success: false,
+        message: "SEBI ID, table type, and table ID are required",
       });
     }
 
     if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(tableId)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Invalid SEBI ID or table ID" 
+      return res.status(400).json({
+        success: false,
+        message: "Invalid SEBI ID or table ID",
       });
     }
 
     // Find the record
     const record = await SEBI.findById(id);
     if (!record) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "SEBI record not found" 
+      return res.status(404).json({
+        success: false,
+        message: "SEBI record not found",
       });
     }
 
@@ -335,9 +390,9 @@ exports.editNestedField = async (req, res) => {
       case "addressTables": {
         const table = record.addressTables.id(tableId);
         if (!table) {
-          return res.status(404).json({ 
-            success: false, 
-            message: "Address table not found" 
+          return res.status(404).json({
+            success: false,
+            message: "Address table not found",
           });
         }
 
@@ -353,9 +408,9 @@ exports.editNestedField = async (req, res) => {
       case "positionTable": {
         const table = record.positionTable.id(tableId);
         if (!table) {
-          return res.status(404).json({ 
-            success: false, 
-            message: "Position table not found" 
+          return res.status(404).json({
+            success: false,
+            message: "Position table not found",
           });
         }
 
@@ -371,9 +426,9 @@ exports.editNestedField = async (req, res) => {
       case "pdfTables": {
         const table = record.pdfTables.id(tableId);
         if (!table) {
-          return res.status(404).json({ 
-            success: false, 
-            message: "PDF table not found" 
+          return res.status(404).json({
+            success: false,
+            message: "PDF table not found",
           });
         }
 
@@ -388,9 +443,9 @@ exports.editNestedField = async (req, res) => {
       case "documentAll": {
         const doc = record.documentAll.id(tableId);
         if (!doc) {
-          return res.status(404).json({ 
-            success: false, 
-            message: "Document not found" 
+          return res.status(404).json({
+            success: false,
+            message: "Document not found",
           });
         }
 
@@ -403,9 +458,9 @@ exports.editNestedField = async (req, res) => {
       }
 
       default:
-        return res.status(400).json({ 
-          success: false, 
-          message: "Invalid table type" 
+        return res.status(400).json({
+          success: false,
+          message: "Invalid table type",
         });
     }
 
@@ -417,18 +472,17 @@ exports.editNestedField = async (req, res) => {
     record.updatedAt = Date.now();
     await record.save();
 
-    res.status(200).json({ 
-      success: true, 
-      message: "Nested field updated successfully", 
-      data: record 
+    res.status(200).json({
+      success: true,
+      message: "Nested field updated successfully",
+      data: record,
     });
-
   } catch (err) {
     console.error("EDIT NESTED FIELD ERROR:", err);
-    res.status(500).json({ 
-      success: false, 
-      message: "Failed to edit nested field", 
-      error: err.message 
+    res.status(500).json({
+      success: false,
+      message: "Failed to edit nested field",
+      error: err.message,
     });
   }
 };
@@ -443,25 +497,25 @@ exports.editSingleLevelItem = async (req, res) => {
 
     // Validation
     if (!id || !tableType || !itemId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "SEBI ID, table type, and item ID are required" 
+      return res.status(400).json({
+        success: false,
+        message: "SEBI ID, table type, and item ID are required",
       });
     }
 
     if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(itemId)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Invalid SEBI ID or item ID" 
+      return res.status(400).json({
+        success: false,
+        message: "Invalid SEBI ID or item ID",
       });
     }
 
     // Find the record
     const record = await SEBI.findById(id);
     if (!record) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "SEBI record not found" 
+      return res.status(404).json({
+        success: false,
+        message: "SEBI record not found",
       });
     }
 
@@ -470,9 +524,9 @@ exports.editSingleLevelItem = async (req, res) => {
       case "documentLink": {
         const item = record.documentLink.id(itemId);
         if (!item) {
-          return res.status(404).json({ 
-            success: false, 
-            message: "Document link not found" 
+          return res.status(404).json({
+            success: false,
+            message: "Document link not found",
           });
         }
 
@@ -487,9 +541,9 @@ exports.editSingleLevelItem = async (req, res) => {
       case "documentPdf": {
         const item = record.documentPdf.id(itemId);
         if (!item) {
-          return res.status(404).json({ 
-            success: false, 
-            message: "Document PDF not found" 
+          return res.status(404).json({
+            success: false,
+            message: "Document PDF not found",
           });
         }
 
@@ -502,9 +556,9 @@ exports.editSingleLevelItem = async (req, res) => {
       }
 
       default:
-        return res.status(400).json({ 
-          success: false, 
-          message: "Invalid table type" 
+        return res.status(400).json({
+          success: false,
+          message: "Invalid table type",
         });
     }
 
@@ -516,18 +570,17 @@ exports.editSingleLevelItem = async (req, res) => {
     record.updatedAt = Date.now();
     await record.save();
 
-    res.status(200).json({ 
-      success: true, 
-      message: "Item updated successfully", 
-      data: record 
+    res.status(200).json({
+      success: true,
+      message: "Item updated successfully",
+      data: record,
     });
-
   } catch (err) {
     console.error("EDIT SINGLE ITEM ERROR:", err);
-    res.status(500).json({ 
-      success: false, 
-      message: "Failed to edit item", 
-      error: err.message 
+    res.status(500).json({
+      success: false,
+      message: "Failed to edit item",
+      error: err.message,
     });
   }
 };
@@ -635,12 +688,12 @@ exports.updateSEBIRecord = async (req, res) => {
           pdfYear: normalizeYear(table.pdfYear),
           fields: Array.isArray(table.fields)
             ? table.fields.map((f) => ({
-              pdfName: f.pdfName || "",
-              pdfFile: f.pdfFile || "",
-              quater: f.quater || "",
-              pdfDate: f.pdfDate || null,
-              _id: f._id || new mongoose.Types.ObjectId(),
-            }))
+                pdfName: f.pdfName || "",
+                pdfFile: f.pdfFile || "",
+                quater: f.quater || "",
+                pdfDate: f.pdfDate || null,
+                _id: f._id || new mongoose.Types.ObjectId(),
+              }))
             : [],
           _id: table._id || new mongoose.Types.ObjectId(),
         }));
@@ -658,9 +711,9 @@ exports.updateSEBIRecord = async (req, res) => {
           tableAddressTitle: table.tableAddressTitle || "",
           fields: Array.isArray(table.fields)
             ? table.fields.map((f) => ({
-              ...f,
-              _id: f._id || new mongoose.Types.ObjectId(),
-            }))
+                ...f,
+                _id: f._id || new mongoose.Types.ObjectId(),
+              }))
             : [],
           _id: table._id || new mongoose.Types.ObjectId(),
         }));
@@ -678,7 +731,7 @@ exports.updateSEBIRecord = async (req, res) => {
       record.positionTable = transformPositionTable(data.positionTable);
     }
 
-    // Smart update for Document All - FIXED
+    // Smart update for Document All
     if (data.documentAll !== undefined) {
       if (data.replaceDocumentAll) {
         // Complete replacement
@@ -686,9 +739,9 @@ exports.updateSEBIRecord = async (req, res) => {
           year: normalizeYear(doc.year),
           documentfields: Array.isArray(doc.documentfields)
             ? doc.documentfields.map((f) => ({
-              ...f,
-              _id: f._id || new mongoose.Types.ObjectId(),
-            }))
+                ...f,
+                _id: f._id || new mongoose.Types.ObjectId(),
+              }))
             : [],
           _id: doc._id || new mongoose.Types.ObjectId(),
         }));
@@ -756,7 +809,7 @@ exports.updateSpecificField = async (req, res) => {
       case "positionTable":
         table = record.positionTable.id(tableId);
         break;
-      case "documentAll": // FIXED
+      case "documentAll":
         table = record.documentAll.id(tableId);
         break;
       default:
@@ -868,19 +921,19 @@ exports.deleteSpecificTable = async (req, res) => {
       });
     }
 
-    // Remove specific table
+    // Remove specific table using pull() method
     switch (tableType) {
       case "pdfTables":
-        record.pdfTables.id(tableId).remove();
+        record.pdfTables.pull(tableId);
         break;
       case "addressTables":
-        record.addressTables.id(tableId).remove();
+        record.addressTables.pull(tableId);
         break;
       case "positionTable":
-        record.positionTable.id(tableId).remove();
+        record.positionTable.pull(tableId);
         break;
-      case "documentAll": // FIXED
-        record.documentAll.id(tableId).remove();
+      case "documentAll":
+        record.documentAll.pull(tableId);
         break;
       default:
         return res.status(400).json({
@@ -908,10 +961,8 @@ exports.deleteSpecificTable = async (req, res) => {
 };
 
 /* =====================================================
-   🔴 DELETE NESTED FIELD - FIXED VERSION
+   🔴 DELETE NESTED FIELD - FIXED VERSION with pull()
 ===================================================== */
-
-
 
 exports.deleteNestedField = async (req, res) => {
   try {
@@ -951,8 +1002,10 @@ exports.deleteNestedField = async (req, res) => {
         }
 
         table.fields.splice(fieldIndex, 1);
+        
+        // If table is empty, remove the entire table using pull()
         if (table.fields.length === 0) {
-          table.remove();
+          record.addressTables.pull(tableId);
           message = "Address table field deleted (table removed as it was empty)";
         } else {
           message = "Address table field deleted successfully";
@@ -971,8 +1024,10 @@ exports.deleteNestedField = async (req, res) => {
         }
 
         doc.documentfields.splice(fieldIndex, 1);
+        
+        // If document has no more fields, remove the entire document using pull()
         if (doc.documentfields.length === 0) {
-          doc.remove();
+          record.documentAll.pull(tableId);
           message = "Document field deleted (document removed as it was empty)";
         } else {
           message = "Document field deleted successfully";
@@ -991,8 +1046,10 @@ exports.deleteNestedField = async (req, res) => {
         }
 
         pdfTable.fields.splice(fieldIndex, 1);
+        
+        // If PDF table is empty, remove the entire table using pull()
         if (pdfTable.fields.length === 0) {
-          pdfTable.remove();
+          record.pdfTables.pull(tableId);
           message = "PDF field deleted (table removed as it was empty)";
         } else {
           message = "PDF field deleted successfully";
@@ -1011,8 +1068,10 @@ exports.deleteNestedField = async (req, res) => {
         }
 
         posTable.fields.splice(fieldIndex, 1);
+        
+        // If position table is empty, remove the entire table using pull()
         if (posTable.fields.length === 0) {
-          posTable.remove();
+          record.positionTable.pull(tableId);
           message = "Position field deleted (table removed as it was empty)";
         } else {
           message = "Position field deleted successfully";
@@ -1031,13 +1090,14 @@ exports.deleteNestedField = async (req, res) => {
     record.updatedAt = Date.now();
     await record.save();
 
+    console.log("✅ Field deleted successfully:", message);
+
     res.status(200).json({ success: true, message, data: record });
   } catch (err) {
-    console.error("DELETE NESTED FIELD ERROR:", err);
+    console.error("❌ DELETE NESTED FIELD ERROR:", err);
     res.status(500).json({ success: false, message: "Failed to delete field", error: err.message });
   }
 };
-
 
 /* =====================================================
    🔴 DELETE SINGLE-LEVEL ITEM - FIXED VERSION
@@ -1132,13 +1192,15 @@ exports.deleteSingleLevelItem = async (req, res) => {
     record.updatedAt = Date.now();
     await record.save();
 
+    console.log("✅ Item deleted successfully:", message);
+
     res.status(200).json({
       success: true,
       message: message,
       data: record,
     });
   } catch (err) {
-    console.error("DELETE SINGLE LEVEL ITEM ERROR:", err);
+    console.error("❌ DELETE SINGLE LEVEL ITEM ERROR:", err);
     res.status(500).json({
       success: false,
       message: "Failed to delete item",
@@ -1146,8 +1208,6 @@ exports.deleteSingleLevelItem = async (req, res) => {
     });
   }
 };
-
-
 
 exports.deleteSEBI = async (req, res) => {
   try {
@@ -1182,7 +1242,6 @@ exports.deleteSEBI = async (req, res) => {
       success: true,
       message: "SEBI record deleted successfully",
     });
-
   } catch (error) {
     console.error("Delete SEBI Error:", error);
     return res.status(500).json({

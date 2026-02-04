@@ -13,19 +13,31 @@ exports.createPhilosophy = async (req, res) => {
       });
     }
 
-    // if (!req.files?.image) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "Image is required"
-    //   });
-    // }
+    // Upload Desktop Image
+    let imageUrl = "";
+    if (req.files?.image) {
+      imageUrl = await uploadToS3(
+        req.files.image[0],
+        "philosophy/image"
+      );
+    }
 
-    // const imageUrl = await uploadToS3(req.files.image[0], "philosophy/image");
+    // Upload Mobile Image
+    let mobileImageUrl = "";
+    if (req.files?.mobileImage) {
+      mobileImageUrl = await uploadToS3(
+        req.files.mobileImage[0],
+        "philosophy/mobile"
+      );
+    }
 
-    // Video can be URL or file
+    // Video (File or URL)
     let finalVideo = "";
     if (req.files?.video) {
-      finalVideo = await uploadToS3(req.files.video[0], "philosophy/video");
+      finalVideo = await uploadToS3(
+        req.files.video[0],
+        "philosophy/video"
+      );
     } else if (videoUrl) {
       finalVideo = videoUrl;
     }
@@ -34,6 +46,8 @@ exports.createPhilosophy = async (req, res) => {
       title,
       subtitle,
       description,
+      image: imageUrl,
+      mobileImage: mobileImageUrl,
       video: finalVideo
     });
 
@@ -44,7 +58,10 @@ exports.createPhilosophy = async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server Error" });
+    res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
   }
 };
 
@@ -55,7 +72,10 @@ exports.getAllPhilosophy = async (req, res) => {
     res.status(200).json({ success: true, data });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server Error" });
+    res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
   }
 };
 
@@ -63,13 +83,25 @@ exports.getAllPhilosophy = async (req, res) => {
 exports.getPhilosophyById = async (req, res) => {
   try {
     const data = await Philosophy.findById(req.params.id);
+
     if (!data) {
-      return res.status(404).json({ success: false, message: "Not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Not found"
+      });
     }
-    res.status(200).json({ success: true, data });
+
+    res.status(200).json({
+      success: true,
+      data
+    });
+
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server Error" });
+    res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
   }
 };
 
@@ -80,11 +112,24 @@ exports.updatePhilosophy = async (req, res) => {
     let updateData = { ...req.body };
 
     if (req.files?.image) {
-      updateData.image = await uploadToS3(req.files.image[0], "philosophy/image");
+      updateData.image = await uploadToS3(
+        req.files.image[0],
+        "philosophy/image"
+      );
+    }
+
+    if (req.files?.mobileImage) {
+      updateData.mobileImage = await uploadToS3(
+        req.files.mobileImage[0],
+        "philosophy/mobile"
+      );
     }
 
     if (req.files?.video) {
-      updateData.video = await uploadToS3(req.files.video[0], "philosophy/video");
+      updateData.video = await uploadToS3(
+        req.files.video[0],
+        "philosophy/video"
+      );
     } else if (videoUrl) {
       updateData.video = videoUrl;
     }
@@ -96,14 +141,23 @@ exports.updatePhilosophy = async (req, res) => {
     );
 
     if (!updated) {
-      return res.status(404).json({ success: false, message: "Philosophy not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Philosophy not found"
+      });
     }
 
-    res.status(200).json({ success: true, data: updated });
+    res.status(200).json({
+      success: true,
+      data: updated
+    });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server Error" });
+    res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
   }
 };
 
@@ -111,12 +165,24 @@ exports.updatePhilosophy = async (req, res) => {
 exports.deletePhilosophy = async (req, res) => {
   try {
     const deleted = await Philosophy.findByIdAndDelete(req.params.id);
+
     if (!deleted) {
-      return res.status(404).json({ success: false, message: "Philosophy not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Philosophy not found"
+      });
     }
-    res.status(200).json({ success: true, message: "Deleted successfully" });
+
+    res.status(200).json({
+      success: true,
+      message: "Deleted successfully"
+    });
+
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server Error" });
+    res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
   }
 };

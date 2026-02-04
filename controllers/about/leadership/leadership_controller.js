@@ -21,6 +21,11 @@ exports.createLeadershipBanner = async (req, res) => {
         message: "Main image is required",
       });
     }
+    let mobileImage = "";
+
+    if (req.files?.mobileImage) {
+      mobileImage = await uploadToS3(req.files.mobileImage[0], "leadership/banner");
+    }
 
     // Upload images
     const imageUrl = await uploadToS3(
@@ -39,6 +44,7 @@ exports.createLeadershipBanner = async (req, res) => {
     const banner = await LeadershipBanner.create({
       image: imageUrl,
       featherimage: featherImageUrl,
+      imageForMobile: mobileImage,
       paragraph1,
       paragraph2,
       paragraph3,
@@ -121,7 +127,12 @@ exports.updateLeadershipBanner = async (req, res) => {
         "leadership/banner"
       );
     }
-
+    if (req.files?.mobileImage) {
+      updateData.imageForMobile = await uploadToS3(
+        req.files.mobileImage[0],
+        "leadership/banner"
+      );
+    }
     if (req.files?.featherimage) {
       updateData.featherimage = await uploadToS3(
         req.files.featherimage[0],
@@ -134,6 +145,7 @@ exports.updateLeadershipBanner = async (req, res) => {
       updateData,
       { new: true, runValidators: true }
     );
+    console.log(updated)
 
     if (!updated) {
       return res.status(404).json({

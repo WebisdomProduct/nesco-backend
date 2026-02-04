@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
 
 const {
   createCsrBanner,
@@ -10,12 +9,35 @@ const {
   deleteCsrBanner,
 } = require("../../../controllers/ourimpact/csr/csrBannerController");
 
-const upload = require("../../../middlewares/upload")
+const upload = require("../../../middlewares/upload");
 
-router.post("/create", upload.single("image"), createCsrBanner);
+// CREATE
+router.post(
+  "/create",
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "mobileImage", maxCount: 1 }
+  ]),
+  createCsrBanner
+);
+
+// GET ALL
 router.get("/all", getAllCsrBanners);
+
+// GET SINGLE
 router.get("/:id", getSingleCsrBanner);
-router.put("/update/:id", upload.single("image"), updateCsrBanner);
+
+// UPDATE
+router.put(
+  "/update/:id",
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "mobileImage", maxCount: 1 }
+  ]),
+  updateCsrBanner
+);
+
+// DELETE
 router.delete("/delete/:id", deleteCsrBanner);
 
 module.exports = router;
